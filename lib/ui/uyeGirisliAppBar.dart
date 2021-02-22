@@ -9,6 +9,7 @@ class uyeGirisliAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: <Widget>[
         IconButton(
+          onPressed: () {},
           icon: Icon(
             Icons.arrow_forward_outlined,
             color: Colors.white,
