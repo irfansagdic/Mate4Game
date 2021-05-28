@@ -11,18 +11,17 @@ class Paylasimlar extends StatefulWidget {
 }
 
 class PaylasimlarState extends State<Paylasimlar> {
-  List<Paylasim> tumPaylasimlar = [];
+  // List<Paylasim> tumPaylasimlar = [];
 
   @override
   Widget build(BuildContext context) {
-    tumPaylasimlariGetir();
     return Scaffold(
       appBar: uyeGirissizAppBar(),
       body: Gonderiler(),
     );
   }
 
-  void tumPaylasimlariGetir() {
+  /*void tumPaylasimlariGetir() {
     tumPaylasimlar = List.generate(
         100,
         (index) => Paylasim(
@@ -30,13 +29,13 @@ class PaylasimlarState extends State<Paylasimlar> {
             "Soyadı = Soyadı $index",
             "Oyunun Adı = Oyun Ad $index",
             "Paylaşım Açıklama=açıklama $index"));
-  }
+  }*/
 }
 
-class Paylasim {
+/*class Paylasim {
   String _ad;
   String _soyad;
   String _oyununAdi;
   String _paylasimAciklama;
   Paylasim(this._ad, this._soyad, this._oyununAdi, this._paylasimAciklama);
-}
+}*/

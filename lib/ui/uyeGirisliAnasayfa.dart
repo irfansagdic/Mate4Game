@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
-
-import 'paylasimlar.dart';
-import 'uyeGirisliAppBar.dart';
+import 'package:mate4game/ui/arama.dart';
+import 'package:mate4game/ui/gonderiEkle.dart';
+import 'package:mate4game/ui/paylasimlar.dart';
+import 'package:mate4game/ui/profilpage.dart';
+import 'package:mate4game/ui/uyeGirisliAppBar.dart';
+import 'package:mate4game/widgets/custom_app_bar.dart';
 
 class uyeGirisliPaylasimlar extends StatefulWidget {
+  final int gelenSayfaNo;
+
+  const uyeGirisliPaylasimlar({Key key, this.gelenSayfaNo}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return uyeGirisliPaylasimlarState();
@@ -11,62 +18,40 @@ class uyeGirisliPaylasimlar extends StatefulWidget {
 }
 
 class uyeGirisliPaylasimlarState extends State<uyeGirisliPaylasimlar> {
-  List<Paylasim> tumPaylasimlar = [];
-  int secilenMenuItem = 0;
-  /*List<Widget> tumSayfalar;
-  aramaSayfasi AramaSayfasi = new aramaSayfasi();*/
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    //  tumSayfalar=[];
+  var _selectedPage = 0;
+
+  List<Widget> tumSayfalar = [
+    Gonderiler(),
+    aramaSayfasi(), //userprofilpage
+    gonderiEkle(),
+    ProfilPage(),
+  ];
+  onItemTapped(int index) {
+    setState(() {
+      _selectedPage = index;
+    });
   }
+
+  int iGirdiMi = 0;
+  @override
+  // TODO: implement widget
 
   @override
   Widget build(BuildContext context) {
-    tumPaylasimlariGetir();
+    if (widget.gelenSayfaNo != null && iGirdiMi == 0) {
+      iGirdiMi = 1;
+      setState(() {
+        _selectedPage = widget.gelenSayfaNo;
+      });
+    }
+
     return Scaffold(
-      appBar: uyeGirisliAppBar(),
-      //    body: Gonderiler(),
-      body: Gonderiler(),
-      bottomNavigationBar: BottomNavigationBar(
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-              icon: Icon(Icons.home), title: Text("Anasayfa")),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.search), title: Text("Arama")),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.add_sharp), title: Text("Gönderi Ekle")),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle_sharp), title: Text("Profil")),
-        ],
-        type: BottomNavigationBarType.fixed,
-        currentIndex: secilenMenuItem,
-        onTap: (index) {
-          setState(() {
-            secilenMenuItem = index;
-          });
-        },
-      ),
-    );
+        appBar: uyeGirisliAppBar(),
+        //    body: Gonderiler(),
+        body: tumSayfalar.elementAt(_selectedPage),
+        bottomNavigationBar: CustomBottomAppBar(
+          page: _selectedPage,
+          press: onItemTapped,
+        ));
   }
-
-  void tumPaylasimlariGetir() {
-    tumPaylasimlar = List.generate(
-        100,
-        (index) => Paylasim(
-            "Adı = Adı $index",
-            "Soyadı = Soyadı $index",
-            "Oyunun Adı = Oyun Ad $index",
-            "Paylaşım Açıklama=açıklama $index"));
-  }
-}
-
-class Paylasim {
-  String _ad;
-  String _soyad;
-  String _oyununAdi;
-  String _paylasimAciklama;
-
-  Paylasim(this._ad, this._soyad, this._oyununAdi, this._paylasimAciklama);
 }

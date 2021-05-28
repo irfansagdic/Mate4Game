@@ -22,7 +22,9 @@ class uyeGirissizAppBar extends StatelessWidget implements PreferredSizeWidget {
             Icons.login,
             color: Colors.white,
           ),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pushNamed(context, "/uyeGiris");
+          },
         )
       ],
     );

@@ -1,5 +1,11 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:mate4game/services/database.dart';
+import 'package:mate4game/ui/uyeGiris.dart';
+import 'package:mate4game/ui/uyeGirisliAnasayfa.dart';
 import 'package:mate4game/ui/uyeGirissizAppBar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class uyeKayit extends StatefulWidget {
   @override
@@ -7,8 +13,10 @@ class uyeKayit extends StatefulWidget {
 }
 
 class uyeKayitState extends State<uyeKayit> {
+  var mySharedPrefences;
   int _aktifStep = 0;
   String ad, soyad, mail, sTekrarSifre, sSifre;
+  String _sToken;
   List<Step> tumStepler;
   bool hata = false;
   var key0 = GlobalKey<FormFieldState>();
@@ -19,6 +27,135 @@ class uyeKayitState extends State<uyeKayit> {
   @override
   void initState() {
     super.initState();
+    SharedPreferences.getInstance().then((sf) => mySharedPrefences = sf);
+    tokenYazdir();
+  }
+
+  tokenYazdir() async {
+    FirebaseMessaging.instance.getToken().then((value) {
+      _sToken = value;
+    });
+  }
+
+  uyeKayitFonk() async {
+    var result = await services.uyeKayit(ad, soyad, mail, sSifre, _sToken);
+    result = result.trim();
+    // print(result);
+    // print(result);
+    if (result == "Email Hata") {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible:
+            false, //this means the user must tap a button to exit the Alert Dialog
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Hata Mesajı'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('Bu Mail Zaten Üye veya Üyeliği Aktif Edilmemiştir.'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else if (result == "pasif") {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible:
+            false, //this means the user must tap a button to exit the Alert Dialog
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Bilgi Mesajı'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text(
+                      'Mail Adresinizden Üyeliğinizi Aktif Hale Getirip,Butona Basınız'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Aktif Et'),
+                onPressed: () async {
+                  var mailKontrolEt = await services.mailKontrol(mail);
+                  //  print(mailKontrolEt);
+                  if (mailKontrolEt == "aktifdegil") {
+                    Navigator.pop(context);
+                    return showDialog<void>(
+                      context: context,
+                      barrierDismissible: false, // user must tap button!
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Hata'),
+                          content: SingleChildScrollView(
+                            child: ListBody(
+                              children: <Widget>[
+                                Text(
+                                    'Mailinize gelen linke tıklamadığınız için üyeliğiniz aktif edilmedi.'
+                                    'Üye Giriş Ekranına Yönlendirileceksiniz'),
+                              ],
+                            ),
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              child: Text('Üye Girişi'),
+                              onPressed: () {
+                                Get.offAll(uyeGiris());
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else if (mailKontrolEt == "aktifedildi") {
+                    Navigator.pop(context);
+                    _SharedPreferencesEkle();
+                    return showDialog<void>(
+                      context: context,
+                      barrierDismissible: false, // user must tap button!
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Hata'),
+                          content: SingleChildScrollView(
+                            child: ListBody(
+                              children: <Widget>[
+                                Text(
+                                    'Üyeliğiniz Aktif Edildi,Anasayfa Ekranına Yönlendiriliyorsunuz'),
+                              ],
+                            ),
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              child: Text('Anasayfa'),
+                              onPressed: () {
+                                /*Navigator.pushNamed(
+                                    context, '/uyeGirisliAnasayfa');*/
+                                Get.offAll(uyeGirisliPaylasimlar());
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   @override
@@ -35,7 +172,9 @@ class uyeKayitState extends State<uyeKayit> {
                 RaisedButton(
                   color: Colors.blue,
                   onPressed: onStepContinue,
-                  child: const Text('Devam Et!'),
+                  child: _aktifStep == 4
+                      ? const Text('Kaydı Tamamla')
+                      : const Text('Devam Et!'),
                 ),
                 SizedBox(
                   width: 30,
@@ -50,11 +189,6 @@ class uyeKayitState extends State<uyeKayit> {
           },
           steps: _tumStepler(),
           currentStep: _aktifStep,
-          /*onStepTapped: (tiklanilanStep) {
-            setState(() {
-              _aktifStep = tiklanilanStep;
-            });
-          },*/
           onStepContinue: () {
             setState(() {
               ileriButonKontrol();
@@ -117,9 +251,7 @@ class uyeKayitState extends State<uyeKayit> {
             decoration: InputDecoration(
                 hintText: "Email", border: OutlineInputBorder()),
             validator: (girilenDeger) {
-              if (girilenDeger.length < 6 ||
-                  !girilenDeger.contains(
-                      "^[a-zA-Z0-9.!#%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*")) {
+              if (girilenDeger.length < 6) {
                 return "Geçersiz Email";
               }
             },
@@ -159,6 +291,7 @@ class uyeKayitState extends State<uyeKayit> {
             },
             onSaved: (girilenDeger) {
               sTekrarSifre = girilenDeger;
+              uyeKayitFonk();
             }),
       ),
     ];
@@ -212,5 +345,15 @@ class uyeKayitState extends State<uyeKayit> {
         }
         break;
     }
+  }
+
+  void _SharedPreferencesEkle() async {
+    await (mySharedPrefences as SharedPreferences).setString("ad", ad);
+    await (mySharedPrefences as SharedPreferences).setString("soyad", soyad);
+    await (mySharedPrefences as SharedPreferences).setString("mail", mail);
+    await (mySharedPrefences as SharedPreferences).setString("sifre", sSifre);
+    await (mySharedPrefences as SharedPreferences).setString("token", _sToken);
+    await (mySharedPrefences as SharedPreferences).setString("profilfoto",
+        "https://t3.ftcdn.net/jpg/01/18/01/98/360_F_118019822_6CKXP6rXmVhDOzbXZlLqEM2ya4HhYzSV.jpg");
   }
 }

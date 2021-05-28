@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "582398736695",
+    "project_id": "mate4game-ef8d7",
+    "storage_bucket": "mate4game-ef8d7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:582398736695:android:15f574f035e338301002b2",
+        "android_client_info": {
+          "package_name": "com.irfansagdic.mate4game"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "582398736695-ons1v13d86a62aeicuvvf4mbmhhrj9lq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC01W6JYCS1NyD_uRfQcHL8-Bl1stEzneY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "582398736695-ons1v13d86a62aeicuvvf4mbmhhrj9lq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
